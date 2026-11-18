@@ -217,6 +217,10 @@ function chir_hora( $h ) {
 								<label for="r-nombre">Nombre</label>
 								<input id="r-nombre" name="nombre" type="text" autocomplete="given-name" required>
 							</div>
+							<div class="campo">
+								<label for="r-telefono">Teléfono</label>
+								<input id="r-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" minlength="9" maxlength="20" required>
+							</div>
 							<div class="campos-2">
 								<div class="campo">
 									<label for="r-personas">Personas</label>
@@ -245,8 +249,10 @@ function chir_hora( $h ) {
 									</select>
 								</div>
 							</div>
-							<button class="boton boton--solido boton--ancho" type="submit">Enviar por WhatsApp</button>
-							<p class="form__nota">Se abre WhatsApp con el mensaje escrito. La reserva queda confirmada cuando el local responde.</p>
+							<div class="campo-trampa" aria-hidden="true"><label for="r-web">No rellenar</label><input id="r-web" name="web" type="text" tabindex="-1" autocomplete="off"></div>
+							<button class="boton boton--solido boton--ancho" type="submit">Reservar mesa</button>
+							<p class="form__estado" id="reserva-estado" role="status" aria-live="polite" hidden></p>
+							<p class="form__nota">La reserva queda guardada al enviarla y el local la confirma por teléfono. <a id="reserva-wa" href="<?php echo esc_url( $wa_hola ); ?>" target="_blank" rel="noopener">¿Prefieres WhatsApp?</a></p>
 						</form>
 					<?php endif; ?>
 				</div>

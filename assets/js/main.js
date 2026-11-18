@@ -89,26 +89,51 @@
 		if (fila) { fila.classList.add('hoy-fila'); }
 	}
 
-	/* 4. Formulario de reserva → mensaje de WhatsApp. */
+	/* 4. Formulario de reserva → se envía por AJAX a WordPress y se guarda en MySQL. */
 	var form = document.getElementById('form-reserva');
-	if (form) {
+	if (form && window.CHIR) {
 		var fecha = document.getElementById('r-fecha');
+		var estado = document.getElementById('reserva-estado');
+		var boton = form.querySelector('button[type="submit"]');
 		var hoyISO = new Date();
 		hoyISO = hoyISO.getFullYear() + '-' + String(hoyISO.getMonth() + 1).padStart(2, '0') + '-' + String(hoyISO.getDate()).padStart(2, '0');
 		fecha.min = hoyISO;
 		fecha.value = hoyISO;
 
+		function mostrar(texto, ok) {
+			estado.textContent = texto;
+			estado.className = 'form__estado ' + (ok ? 'form__estado--ok' : 'form__estado--error');
+			estado.hidden = false;
+		}
+
 		form.addEventListener('submit', function (e) {
 			e.preventDefault();
-			var f = new FormData(form);
-			var partesFecha = String(f.get('fecha')).split('-');
-			var fechaTxt = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : f.get('fecha');
-			var n = parseInt(f.get('personas'), 10);
-			var msg = 'Hola, soy ' + f.get('nombre').toString().trim() + '. Quiero reservar mesa en ' + form.getAttribute('data-nombre') +
-				' para ' + n + (n === 1 ? ' persona' : ' personas') +
-				' el ' + fechaTxt + ' a las ' + f.get('hora') +
-				'. Zona: ' + f.get('zona').toString().toLowerCase() + '.';
-			window.open(form.getAttribute('data-wa') + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+			var datos = new FormData(form);
+			datos.append('action', 'chir_reserva');
+			datos.append('nonce', window.CHIR.nonce);
+
+			boton.disabled = true;
+			boton.textContent = 'Enviando…';
+			estado.hidden = true;
+
+			fetch(window.CHIR.ajax, { method: 'POST', body: datos, credentials: 'same-origin' })
+				.then(function (r) { return r.json(); })
+				.then(function (r) {
+					if (r && r.success) {
+						mostrar(r.data.mensaje, true);
+						form.reset();
+						fecha.value = hoyISO;
+					} else {
+						mostrar((r && r.data && r.data.mensaje) || 'No se ha podido enviar la reserva.', false);
+					}
+				})
+				.catch(function () {
+					mostrar('No hay conexión con el servidor. Inténtalo de nuevo o llámanos.', false);
+				})
+				.finally(function () {
+					boton.disabled = false;
+					boton.textContent = 'Reservar mesa';
+				});
 		});
 	}
 })();

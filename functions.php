@@ -30,7 +30,15 @@ add_action( 'wp_enqueue_scripts', function () {
 	);
 	wp_enqueue_style( 'chir-main', $uri . '/assets/css/main.css', array( 'chir-fuentes' ), filemtime( $dir . '/assets/css/main.css' ) );
 	wp_enqueue_script( 'chir-main', $uri . '/assets/js/main.js', array(), filemtime( $dir . '/assets/js/main.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
+
+	// Datos que main.js necesita para enviar la reserva: URL de admin-ajax.php y nonce de seguridad.
+	wp_localize_script( 'chir-main', 'CHIR', array(
+		'ajax'  => admin_url( 'admin-ajax.php' ),
+		'nonce' => wp_create_nonce( 'chir_reserva' ),
+	) );
 } );
+
+require get_template_directory() . '/inc/reservas.php';
 
 /** Quita lo que WordPress añade por defecto y no hace falta en una one-page. */
 remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
