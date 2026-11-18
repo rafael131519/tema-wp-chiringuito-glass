@@ -37,33 +37,9 @@ for ( $m = $fh * 60 + $fm; $m <= $th * 60 + $tm; $m += 30 ) {
 function chir_hora( $h ) {
 	return '24:00' === $h ? '00:00' : $h;
 }
+
+get_header();
 ?>
-<!doctype html>
-<html <?php language_attributes(); ?>>
-<head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="theme-color" content="#BFE0F1">
-	<meta name="description" content="<?php echo esc_attr( $d['descripcion'] ); ?>">
-	<script>document.documentElement.className += ' js';</script>
-	<?php wp_head(); ?>
-</head>
-<body <?php body_class(); ?>>
-<?php wp_body_open(); ?>
-
-<a class="saltar" href="#carta">Ir a la carta</a>
-
-<header class="cabecera">
-	<div class="cabecera__pill glass">
-		<a class="marca" href="#inicio"><?php echo esc_html( $d['nombre'] ); ?></a>
-		<nav class="menu" aria-label="Principal">
-			<a href="#carta">Carta</a>
-			<a href="#terraza">Terraza</a>
-			<a href="#reservar">Horario</a>
-		</nav>
-		<a class="boton boton--solido boton--chico" href="#reservar">Reservar</a>
-	</div>
-</header>
 
 <main id="inicio">
 
@@ -261,14 +237,4 @@ function chir_hora( $h ) {
 	</section>
 </main>
 
-<footer class="pie">
-	<div class="contenedor pie__fila glass">
-		<p>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( $d['nombre'] ); ?></p>
-		<p><a href="https://instagram.com/<?php echo esc_attr( $d['instagram'] ); ?>" target="_blank" rel="noopener">@<?php echo esc_html( $d['instagram'] ); ?></a></p>
-		<p>Web de demostración por KizaryDev</p>
-	</div>
-</footer>
-
-<?php wp_footer(); ?>
-</body>
-</html>
+<?php get_footer(); ?>

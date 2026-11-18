@@ -14,8 +14,30 @@ function chir_datos() {
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'title-tag' );
-	add_theme_support( 'html5', array( 'style', 'script' ) );
+	add_theme_support( 'html5', array( 'style', 'script', 'search-form' ) );
+
+	add_theme_support( 'woocommerce', array(
+		'thumbnail_image_width' => 400,
+		'single_image_width'    => 700,
+		'product_grid'          => array(
+			'default_rows'    => 3,
+			'min_rows'        => 1,
+			'max_rows'        => 8,
+			'default_columns' => 3,
+			'min_columns'     => 1,
+			'max_columns'     => 4,
+		),
+	) );
+	add_theme_support( 'wc-product-gallery-zoom' );
+	add_theme_support( 'wc-product-gallery-lightbox' );
+	add_theme_support( 'wc-product-gallery-slider' );
 } );
+
+// Usamos el css propio del tema para la tienda; se desactiva la hoja de estilos de WooCommerce.
+add_filter( 'woocommerce_enqueue_styles', '__return_empty_array' );
+
+// El título de la tienda lo pinta woocommerce.php (consistente con el resto de páginas); evita el duplicado.
+add_filter( 'woocommerce_show_page_title', '__return_false' );
 
 add_action( 'wp_enqueue_scripts', function () {
 	$dir = get_template_directory();
