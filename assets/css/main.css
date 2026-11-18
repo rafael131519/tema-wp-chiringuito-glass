@@ -1,0 +1,503 @@
+/* ==========================================================================
+   Chiringuito Glass — glassmorphism sobre una escena de playa.
+   Un solo gesto memorable: el fondo baja del cielo al mar y a la arena según se hace scroll,
+   y los paneles de cristal difuminan lo que tienen detrás.
+   ========================================================================== */
+
+:root {
+	--arena: #EBDDBF;
+	--arena-oscura: #CDB78A;
+	--espuma: #F8FCFB;
+	--verde-claro: #CFE5C9;
+	--palma: #1B3A31;
+	--tinta: #17302A;
+	--tinta-suave: #2F5246;
+	--cielo: #8EC5E8;
+	--mar: #2B7FA6;
+	--mar-oscuro: #1F6485;
+	--turquesa: #52B5BE;
+
+	--cristal: rgba(255, 255, 255, .34);
+	--cristal-borde: rgba(255, 255, 255, .62);
+	--cristal-sombra: 0 22px 44px -18px rgba(27, 58, 49, .28);
+
+	--radio: 26px;
+	--fuente-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+	--fuente-texto: "Figtree", "Segoe UI", system-ui, sans-serif;
+	--p: 0; /* progreso de scroll 0–1, lo actualiza main.js */
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 6rem; background: #EAF6FB; }
+
+body {
+	margin: 0;
+	font-family: var(--fuente-texto);
+	font-size: 1.0625rem;
+	line-height: 1.6;
+	color: var(--tinta);
+	-webkit-font-smoothing: antialiased;
+	overflow-x: hidden;
+}
+
+/* Escena: cielo → mar → verde de palmeral → arena. Se desplaza con el scroll. */
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -2;
+	background: linear-gradient(180deg,
+		#EAF6FB 0%,
+		#BFE0F1 20%,
+		#92CDD8 42%,
+		#B9DCCB 62%,
+		#D7E4C3 76%,
+		#EBDDBF 100%);
+	background-size: 100% 320%;
+	background-position: 50% calc(var(--p) * 100%);
+}
+
+/* Sol: un resplandor en la esquina, solo al principio. */
+body::after {
+	content: "";
+	position: fixed;
+	top: -18vmax;
+	right: -12vmax;
+	width: 46vmax;
+	height: 46vmax;
+	z-index: -1;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(255, 247, 226, .95) 0%, rgba(255, 247, 226, 0) 66%);
+	opacity: calc(1 - var(--p) * 3);
+	pointer-events: none;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+:focus-visible {
+	outline: 3px solid var(--palma);
+	outline-offset: 3px;
+	border-radius: 6px;
+}
+
+.saltar {
+	position: fixed;
+	left: 1rem;
+	top: -4rem;
+	z-index: 100;
+	padding: .75rem 1rem;
+	background: var(--palma);
+	color: var(--espuma);
+	border-radius: 12px;
+	transition: top .2s;
+}
+.saltar:focus { top: 1rem; }
+
+/* ---------- Cristal ---------- */
+.glass {
+	background: var(--cristal);
+	border: 1px solid var(--cristal-borde);
+	border-radius: var(--radio);
+	-webkit-backdrop-filter: blur(18px) saturate(150%);
+	backdrop-filter: blur(18px) saturate(150%);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), var(--cristal-sombra);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	.glass { background: rgba(248, 252, 251, .82); }
+}
+
+/* ---------- Tipografía ---------- */
+h1, h2, h3 {
+	font-family: var(--fuente-titulo);
+	font-weight: 700;
+	line-height: 1.02;
+	letter-spacing: -.02em;
+	margin: 0;
+	color: var(--palma);
+	font-variation-settings: "wdth" 82, "opsz" 72;
+}
+
+h1 { font-size: clamp(2.9rem, 8.2vw, 6.6rem); font-weight: 800; letter-spacing: -.03em; max-width: 12ch; }
+h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+h3 { font-size: 1.6rem; line-height: 1.1; }
+
+p { margin: 0; }
+
+/* ---------- Botones ---------- */
+.boton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 48px;
+	padding: .8rem 1.6rem;
+	border-radius: 999px;
+	font: 600 1rem/1 var(--fuente-texto);
+	text-decoration: none;
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: background-color .25s, color .25s, transform .25s, box-shadow .25s;
+}
+.boton--solido {
+	background: var(--palma);
+	color: var(--espuma);
+	box-shadow: 0 10px 22px -10px rgba(27, 58, 49, .7);
+}
+.boton--solido:hover { background: var(--mar-oscuro); transform: translateY(-2px); }
+.boton--glass {
+	background: var(--cristal);
+	border-color: var(--cristal-borde);
+	color: var(--palma);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+}
+.boton--glass:hover { background: rgba(255, 255, 255, .6); transform: translateY(-2px); }
+.boton--chico { min-height: 44px; padding: .65rem 1.2rem; }
+.boton--ancho { width: 100%; }
+
+/* ---------- Cabecera ---------- */
+.cabecera {
+	position: fixed;
+	top: 14px;
+	left: 0;
+	right: 0;
+	z-index: 50;
+	padding: 0 16px;
+}
+.cabecera__pill {
+	max-width: 1080px;
+	margin: 0 auto;
+	padding: .55rem .6rem .55rem 1.4rem;
+	border-radius: 999px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+.marca {
+	font-family: var(--fuente-titulo);
+	font-weight: 700;
+	font-size: 1.25rem;
+	letter-spacing: -.01em;
+	color: var(--palma);
+	text-decoration: none;
+	font-variation-settings: "wdth" 85, "opsz" 24;
+}
+.menu { display: flex; gap: .4rem; margin-left: auto; }
+.menu a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 .95rem;
+	border-radius: 999px;
+	text-decoration: none;
+	font-weight: 500;
+	transition: background-color .2s;
+}
+.menu a:hover { background: rgba(255, 255, 255, .55); }
+
+/* ---------- Hero ---------- */
+.hero {
+	position: relative;
+	min-height: 100svh;
+	display: flex;
+	align-items: center;
+	padding: 7rem 0 15rem;
+	overflow: hidden;
+}
+
+.hero__contenido {
+	position: relative;
+	z-index: 3;
+	width: 100%;
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 0 24px;
+	display: grid;
+	grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+	gap: 2rem;
+	align-items: end;
+}
+
+.hero__desc { margin-top: 1.5rem; max-width: 34rem; font-size: 1.2rem; color: var(--tinta-suave); }
+.hero__botones { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: .8rem; }
+
+.hoy { padding: 1.4rem 1.5rem; display: grid; gap: .5rem; }
+.hoy__estado { display: flex; align-items: center; gap: .6rem; font-weight: 600; font-size: 1.1rem; color: var(--palma); }
+.punto { width: .7rem; height: .7rem; border-radius: 50%; background: var(--arena-oscura); flex: none; }
+.hoy.abierto .punto { background: #2E9B63; box-shadow: 0 0 0 0 rgba(46, 155, 99, .5); animation: latido 2.4s ease-out infinite; }
+.hoy__linea { color: var(--tinta-suave); font-size: .98rem; line-height: 1.45; }
+.hoy__enlace { justify-self: start; font-weight: 600; text-underline-offset: 4px; }
+
+@keyframes latido {
+	0%   { box-shadow: 0 0 0 0 rgba(46, 155, 99, .5); }
+	70%  { box-shadow: 0 0 0 10px rgba(46, 155, 99, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(46, 155, 99, 0); }
+}
+
+/* Entrada del hero: una sola secuencia al cargar. */
+.js .hero__texto > *,
+.js .hoy {
+	animation: subir .9s cubic-bezier(.2, .7, .2, 1) both;
+}
+.js .hero__texto h1 { animation-delay: .05s; }
+.js .hero__desc { animation-delay: .2s; }
+.js .hero__botones { animation-delay: .32s; }
+.js .hoy { animation-delay: .5s; }
+@keyframes subir {
+	from { opacity: 0; transform: translateY(18px); }
+	to   { opacity: 1; transform: none; }
+}
+
+/* Palmeras */
+.palma {
+	position: absolute;
+	top: -30px;
+	z-index: 2;
+	width: min(27vw, 390px);
+	height: auto;
+	color: var(--palma);
+	opacity: .92;
+	pointer-events: none;
+	transform-origin: 0 0;
+	animation: brisa 9s ease-in-out infinite alternate;
+	left: -14px;
+}
+.palma--der {
+	left: auto;
+	right: -14px;
+	transform-origin: 100% 0;
+	animation-duration: 11s;
+	animation-direction: alternate-reverse;
+}
+@keyframes brisa {
+	from { rotate: -1.6deg; }
+	to   { rotate: 1.8deg; }
+}
+
+/* Olas */
+.olas {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: clamp(190px, 34vh, 320px);
+	z-index: 1;
+	pointer-events: none;
+}
+.ola {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 200%;
+	height: 100%;
+	will-change: transform;
+	animation: ola 26s linear infinite;
+}
+.ola--1 { height: 100%; animation-duration: 34s; animation-direction: reverse; }
+.ola--2 { height: 82%; animation-duration: 24s; }
+.ola--3 { height: 62%; animation-duration: 17s; animation-direction: reverse; }
+@keyframes ola { to { transform: translateX(-50%); } }
+
+/* ---------- Secciones ---------- */
+.seccion { padding: clamp(4rem, 9vw, 7rem) 0; position: relative; }
+.seccion--ultima { padding-bottom: 5rem; }
+.contenedor { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+.seccion__cabecera { margin-bottom: 2.4rem; max-width: 40rem; }
+.seccion__cabecera p { margin-top: .8rem; color: var(--tinta-suave); font-size: 1.1rem; }
+
+/* Aparición: el cristal pasa de casi sin desenfoque a su desenfoque final. */
+.js .rv {
+	opacity: 0;
+	transform: translateY(10px);
+	transition: opacity .9s ease, transform .9s cubic-bezier(.2, .7, .2, 1);
+}
+.js .rv.glass,
+.js .rv.glass.is-in {
+	transition: opacity .9s ease, transform .9s cubic-bezier(.2, .7, .2, 1),
+		-webkit-backdrop-filter 1.1s ease, backdrop-filter 1.1s ease;
+}
+.js .rv.glass:not(.is-in) { -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.js .rv.is-in { opacity: 1; transform: none; }
+
+/* ---------- Carta ---------- */
+.carta {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.4rem;
+}
+.carta__panel { padding: 1.9rem 2rem 2rem; }
+.carta__panel ul { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: .95rem; }
+
+.plato {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	column-gap: .7rem;
+	align-items: baseline;
+}
+.plato__n { font-weight: 600; }
+.plato__linea {
+	align-self: end;
+	height: 0;
+	margin-bottom: .4em;
+	border-bottom: 2px dotted rgba(23, 48, 42, .38);
+}
+.plato__p { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.plato__nota { grid-column: 1 / -1; color: var(--tinta-suave); font-size: .92rem; line-height: 1.35; }
+
+/* ---------- Galería ---------- */
+.galeria {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-auto-rows: clamp(170px, 22vw, 250px);
+	gap: 1.1rem;
+}
+.foto {
+	position: relative;
+	margin: 0;
+	border-radius: var(--radio);
+	overflow: hidden;
+	border: 1px solid var(--cristal-borde);
+	box-shadow: var(--cristal-sombra);
+	isolation: isolate;
+}
+.foto--1 { grid-column: span 2; grid-row: span 2; }
+.foto img,
+.foto__relleno {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform .8s cubic-bezier(.2, .7, .2, 1);
+}
+.foto:hover img,
+.foto:hover .foto__relleno { transform: scale(1.04); }
+
+/* Rellenos mientras no hay fotos reales: salen de la propia paleta. */
+.foto__relleno { background: linear-gradient(160deg, var(--cielo), var(--espuma)); }
+.foto--2 .foto__relleno { background: linear-gradient(200deg, #F1E3C2, var(--verde-claro)); }
+.foto--3 .foto__relleno { background: linear-gradient(150deg, var(--turquesa), #A9DDE0); }
+.foto--4 .foto__relleno { background: linear-gradient(170deg, var(--arena), var(--espuma)); }
+.foto--5 .foto__relleno { background: linear-gradient(160deg, #6BA58D, var(--verde-claro)); }
+.foto--6 .foto__relleno { background: linear-gradient(190deg, var(--mar), var(--cielo)); }
+
+.foto figcaption {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	z-index: 2;
+	padding: .5rem 1rem;
+	border-radius: 999px;
+	font-weight: 600;
+	font-size: .95rem;
+	color: var(--palma);
+	background: rgba(255, 255, 255, .5);
+}
+
+/* ---------- Reserva ---------- */
+.reserva {
+	display: grid;
+	grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+	gap: 1.4rem;
+	align-items: start;
+}
+.reserva__info,
+.reserva__form { padding: 2rem; }
+.reserva__form p { margin: .8rem 0 1.4rem; }
+
+.tabla-horario { width: 100%; margin: 1.1rem 0 1.4rem; border-collapse: collapse; }
+.tabla-horario th,
+.tabla-horario td {
+	padding: .5rem 0;
+	text-align: left;
+	border-bottom: 1px solid rgba(23, 48, 42, .14);
+	font-weight: 500;
+}
+.tabla-horario td { text-align: right; font-variant-numeric: tabular-nums; }
+.tabla-horario tr.hoy-fila th,
+.tabla-horario tr.hoy-fila td { font-weight: 700; color: var(--palma); }
+.contacto { color: var(--tinta-suave); line-height: 1.8; }
+.contacto a { text-underline-offset: 4px; }
+
+.reserva__form form { display: grid; gap: 1rem; margin-top: 1.2rem; }
+.campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.campo { display: grid; gap: .35rem; }
+.campo label { font-weight: 600; font-size: .95rem; }
+
+input,
+select {
+	width: 100%;
+	min-height: 48px;
+	padding: .7rem 1rem;
+	font: 500 1rem var(--fuente-texto); /* 16 px: evita el zoom de iOS al enfocar */
+	color: var(--tinta);
+	background: rgba(255, 255, 255, .55);
+	border: 1px solid var(--cristal-borde);
+	border-radius: 14px;
+	transition: background-color .2s, border-color .2s;
+}
+input:hover,
+select:hover { background: rgba(255, 255, 255, .72); }
+input:focus-visible,
+select:focus-visible { outline: 3px solid var(--palma); outline-offset: 2px; background: #fff; }
+
+.form__nota { margin: 0 !important; font-size: .9rem; color: var(--tinta-suave); }
+
+/* ---------- Pie ---------- */
+.pie { padding: 0 0 2rem; }
+.pie__fila {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .6rem 2rem;
+	justify-content: space-between;
+	padding-top: 1.1rem;
+	padding-bottom: 1.1rem;
+	font-size: .95rem;
+	color: var(--tinta-suave);
+	max-width: 1132px;
+}
+.pie__fila a { text-underline-offset: 4px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+	.hero__contenido { grid-template-columns: 1fr; }
+	.hoy { max-width: 26rem; }
+	.carta,
+	.reserva { grid-template-columns: 1fr; }
+	.galeria { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 180px; }
+	.foto--1 { grid-column: span 2; grid-row: span 1; }
+	.palma { width: min(44vw, 300px); }
+}
+
+@media (max-width: 640px) {
+	.menu { display: none; }
+	.cabecera__pill { padding-left: 1.1rem; }
+	.hero { padding: 6.5rem 0 13rem; align-items: flex-start; }
+	.hero__desc { font-size: 1.08rem; }
+	.carta__panel,
+	.reserva__info,
+	.reserva__form { padding: 1.5rem 1.35rem; }
+	.campos-2 { grid-template-columns: 1fr; }
+	.galeria { grid-auto-rows: 150px; }
+	.pie__fila { flex-direction: column; }
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	.ola,
+	.palma,
+	.hoy.abierto .punto { animation: none; }
+	.js .hero__texto > *,
+	.js .hoy { animation: none; }
+	.js .rv { opacity: 1; transform: none; transition: none; }
+	.js .rv.glass:not(.is-in) { -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
+	.foto img,
+	.foto__relleno { transition: none; }
+}
